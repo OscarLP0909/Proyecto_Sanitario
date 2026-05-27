@@ -3,6 +3,7 @@ package org.gestion.proyecto_sanitario.paciente.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.gestion.proyecto_sanitario.auth.model.User;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -24,10 +25,10 @@ public class Paciente {
     private User user;
 
     @Column(nullable = false)
-    private String nombre;
+    private String name;
 
     @Column(nullable = false)
-    private String apellidos;
+    private String surname;
 
     @Column(nullable = false, unique = true)
     private String nif;
@@ -36,6 +37,7 @@ public class Paciente {
     private LocalDateTime fechaNacimiento;
 
     @Column(updatable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
