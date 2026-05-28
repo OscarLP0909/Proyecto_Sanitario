@@ -21,7 +21,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class PacienteServiceImpl implements PacienteService {
-    
+
     private final PacienteRepository pacienteRepository;
     private final PacienteMapper pacienteMapper;
     private final JavaMailSender mailSender;
