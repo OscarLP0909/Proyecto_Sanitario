@@ -1,6 +1,8 @@
 package org.gestion.proyecto_sanitario.medico.repository;
 
 import org.gestion.proyecto_sanitario.medico.model.Slot;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -15,5 +17,7 @@ public interface SlotRepository extends JpaRepository<Slot, Long> {
     boolean existsByMedicoIdAndFechaHoraBetween(Long medicoId, LocalDateTime fechaHoraInicio, LocalDateTime fechaHoraFin);
 
     // Buscar slots disponibles para un médico específico
-    List<Slot> findByMedicoIdAndDisponibleTrue(Long medicoId);
+    Page<Slot> findByMedicoIdAndDisponibleTrue(Long medicoId, Pageable pageable);
+
+    void deleteByMedicoIdAndDisponibleTrue(Long medicoId);
 }

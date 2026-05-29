@@ -10,6 +10,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "disponibilidades")
@@ -32,10 +33,10 @@ public class Disponibilidad {
     private DiaSemana diaSemana;
 
     @Column(nullable = false)
-    private LocalDateTime horaInicio;
+    private LocalTime horaInicio;
 
     @Column(nullable = false)
-    private LocalDateTime horaFin;
+    private LocalTime horaFin;
 
     @Column(nullable = false)
     private Integer duracionMinutos;

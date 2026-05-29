@@ -6,18 +6,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.gestion.proyecto_sanitario.cita.model.EstadoCita;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CitaRequestDto {
+public class UpdateCitaRequestDto {
 
-    @NotNull(message = "El ID del paciente es obligatorio")
-    private Long pacienteId;
-
-    @NotNull(message = "El ID del slot es obligatorio")
-    private Long slotId;
+    @NotNull(message = "El estado de la cita es obligatorio")
+    private EstadoCita estado;
 
     @NotBlank(message = "El motivo de la cita es obligatorio")
     private String motivo;
