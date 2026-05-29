@@ -18,4 +18,6 @@ public interface SlotRepository extends JpaRepository<Slot, Long> {
 
     // Buscar slots disponibles para un médico específico
     Page<Slot> findByMedicoIdAndDisponibleTrue(Long medicoId, Pageable pageable);
+
+    void deleteByMedicoIdAndDisponibleTrue(Long medicoId);
 }
