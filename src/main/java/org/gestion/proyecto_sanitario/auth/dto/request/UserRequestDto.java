@@ -14,7 +14,7 @@ import org.gestion.proyecto_sanitario.auth.model.Role;
 @Builder
 public class UserRequestDto {
 
-    @NotBlank(message = "El email es obligatorio")
+    @NotBlank(message = "El emarril es obligatorio")
     @Email(message = "El email no es válido")
     private String email;
 
