@@ -1,0 +1,12 @@
+spring.application.name
+spring.jpa.show-sql
+spring.jpa.hibernate.ddl-auto
+spring.jpa.open-in-view
+spring.mail.host
+spring.mail.port
+spring.mail.username
+spring.mail.password
+spring.mail.properties.mail.smtp.auth
+spring.mail.properties.mail.smtp.starttls.enable
+jwt.secret
+jwt.expiration
