@@ -1,7 +1,6 @@
 package org.gestion.proyecto_sanitario.medico.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.gestion.proyecto_sanitario.disponibilidad.model.Disponibilidad;
 import org.gestion.proyecto_sanitario.medico.dto.request.SlotRequestDto;
 import org.gestion.proyecto_sanitario.medico.dto.response.SlotResponseDto;
 import org.gestion.proyecto_sanitario.medico.mapper.SlotMapper;
