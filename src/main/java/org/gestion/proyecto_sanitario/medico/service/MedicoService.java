@@ -1,6 +1,8 @@
 package org.gestion.proyecto_sanitario.medico.service;
 
+import jakarta.transaction.Transactional;
 import org.gestion.proyecto_sanitario.medico.dto.request.MedicoRequestDto;
+import org.gestion.proyecto_sanitario.medico.dto.request.MedicoUpdateRequestDto;
 import org.gestion.proyecto_sanitario.medico.dto.response.MedicoResponseDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +15,8 @@ public interface MedicoService {
 
     MedicoResponseDto findbyId(Long id);
 
-    MedicoResponseDto updateMedico(Long id, MedicoRequestDto dto);
+    @Transactional
+    MedicoResponseDto updateMedico(Long id, MedicoUpdateRequestDto dto);
 
     void deleteMedico(Long id);
 

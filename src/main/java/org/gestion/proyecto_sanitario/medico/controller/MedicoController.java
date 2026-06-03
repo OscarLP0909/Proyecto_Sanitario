@@ -1,8 +1,10 @@
 package org.gestion.proyecto_sanitario.medico.controller;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.gestion.proyecto_sanitario.medico.dto.request.MedicoRequestDto;
+import org.gestion.proyecto_sanitario.medico.dto.request.MedicoUpdateRequestDto;
 import org.gestion.proyecto_sanitario.medico.dto.response.MedicoResponseDto;
 import org.gestion.proyecto_sanitario.medico.service.MedicoService;
 import org.springframework.data.domain.Page;
@@ -26,12 +28,16 @@ public class MedicoController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO', 'PACIENTE')")
+    @Transactional
     public ResponseEntity<Page<MedicoResponseDto>> findAll(Pageable pageable) {
         var response = medicoService.findAll(pageable);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO', 'PACIENTE')")
+    @Transactional
     public ResponseEntity<MedicoResponseDto> findById(@PathVariable Long id) {
         var response = medicoService.findbyId(id);
         return ResponseEntity.ok(response);
@@ -39,7 +45,7 @@ public class MedicoController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MedicoResponseDto> updateMedico(@PathVariable Long id, @Valid @RequestBody MedicoRequestDto dto) {
+    public ResponseEntity<MedicoResponseDto> updateMedico(@PathVariable Long id, @Valid @RequestBody MedicoUpdateRequestDto dto) {
         return ResponseEntity.ok(medicoService.updateMedico(id, dto));
     }
 
@@ -51,12 +57,16 @@ public class MedicoController {
     }
 
     @GetMapping("/especialidad/{especialidadId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO', 'PACIENTE')")
+    @Transactional
     public ResponseEntity<Page<MedicoResponseDto>> findByEspecialidadID(@PathVariable Long especialidadId, Pageable pageable) {
         var response = medicoService.findByEspecialidadID(especialidadId, pageable);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/nif/{nif}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
     public ResponseEntity<MedicoResponseDto> findByNif(@PathVariable String nif) {
         var response = medicoService.findByNif(nif);
         return ResponseEntity.ok(response);

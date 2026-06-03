@@ -47,6 +47,7 @@ public class PacienteServiceImpl implements PacienteService {
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(passTemporal))
                 .role(org.gestion.proyecto_sanitario.auth.model.Role.PACIENTE)
+                .activo(true)
                 .build();
         userRepository.save(user);
         Paciente paciente = pacienteMapper.toEntity(dto);

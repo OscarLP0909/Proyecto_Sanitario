@@ -1,11 +1,15 @@
 package org.gestion.proyecto_sanitario.auth.service;
 
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.security.Key;
 import java.util.Date;
 
 @Service
@@ -17,10 +21,14 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long expirationTime;
 
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
+    }
+
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
-                .signWith(io.jsonwebtoken.SignatureAlgorithm.HS256, secretKey)
+                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey)), SignatureAlgorithm.HS256)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .compact();
@@ -28,7 +36,7 @@ public class JwtService {
 
     public String extractUsername(String token) {
         return Jwts.parser()
-                .setSigningKey(secretKey)
+                .setSigningKey(getSigningKey())
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
@@ -40,12 +48,12 @@ public class JwtService {
     }
 
     private boolean isTokenExpired(String token) {
-        Date expiration = Jwts.parser()
-                .setSigningKey(secretKey)
+        return Jwts.parser()
+                .setSigningKey(getSigningKey())
                 .parseClaimsJws(token)
                 .getBody()
-                .getExpiration();
-        return expiration.before(new Date());
+                .getExpiration()
+                .before(new Date());
     }
 
 }

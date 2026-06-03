@@ -1,5 +1,6 @@
 package org.gestion.proyecto_sanitario.medico.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.gestion.proyecto_sanitario.auth.model.Role;
 import org.gestion.proyecto_sanitario.auth.model.User;
@@ -7,6 +8,7 @@ import org.gestion.proyecto_sanitario.auth.repository.UserRepository;
 import org.gestion.proyecto_sanitario.especialidad.model.Especialidad;
 import org.gestion.proyecto_sanitario.especialidad.repository.EspecialidadRepository;
 import org.gestion.proyecto_sanitario.medico.dto.request.MedicoRequestDto;
+import org.gestion.proyecto_sanitario.medico.dto.request.MedicoUpdateRequestDto;
 import org.gestion.proyecto_sanitario.medico.dto.response.MedicoResponseDto;
 import org.gestion.proyecto_sanitario.medico.mapper.MedicoMapper;
 import org.gestion.proyecto_sanitario.medico.model.Medico;
@@ -52,6 +54,7 @@ public class MedicoServiceImpl implements MedicoService {
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(passTemporal))
                 .role(Role.MEDICO)
+                .activo(true)
                 .build();
         userRepository.save(user);
         Medico medico = medicoMapper.toEntity(dto);
@@ -76,19 +79,23 @@ public class MedicoServiceImpl implements MedicoService {
                 .orElseThrow(() -> new IllegalArgumentException("Medico no encontrado"));
     }
 
+    @Transactional
     @Override
-    public MedicoResponseDto updateMedico(Long id, MedicoRequestDto dto) {
+    public MedicoResponseDto updateMedico(Long id, MedicoUpdateRequestDto dto) {
         Medico medico = medicoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Medico no encontrado"));
 
-        medico.setName(dto.getName());
-        medico.setSurname(dto.getSurname());
-        medico.setNif(dto.getNif());
-        List<Especialidad> especialidades = especialidadRepository.findAllById(dto.getEspecialidadesIds());
-        medico.setEspecialidades(especialidades);
-        var updated = medicoRepository.save(medico);
-        return medicoMapper.toResponseDto(updated);
+        if (dto.getName() != null) medico.setName(dto.getName());
+        if (dto.getSurname() != null) medico.setSurname(dto.getSurname());
+        if (dto.getNif() != null) medico.setNif(dto.getNif());
+        if (dto.getEspecialidadesIds() != null && !dto.getEspecialidadesIds().isEmpty()) {
+            List<Especialidad> especialidades = especialidadRepository.findAllById(dto.getEspecialidadesIds());
+            medico.setEspecialidades(especialidades);
+        }
+
+        return medicoMapper.toResponseDto(medicoRepository.save(medico));
     }
+
 
     @Override
     public void deleteMedico(Long id) {

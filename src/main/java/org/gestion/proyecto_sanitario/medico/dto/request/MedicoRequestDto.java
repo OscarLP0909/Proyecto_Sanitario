@@ -2,6 +2,7 @@ package org.gestion.proyecto_sanitario.medico.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,6 +29,6 @@ public class MedicoRequestDto {
     @NotBlank(message = "El nif es obligatorio")
     private String nif;
 
-    @NotBlank(message = "Las especialidades son obligatorias")
+    @NotNull(message = "Las especialidades son obligatorias")
     private List<Long> especialidadesIds;
 }
