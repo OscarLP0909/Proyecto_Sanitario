@@ -1,5 +1,6 @@
 package org.gestion.proyecto_sanitario.medico.repository;
 
+import org.gestion.proyecto_sanitario.medico.model.Medico;
 import org.gestion.proyecto_sanitario.medico.model.Slot;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,4 +21,6 @@ public interface SlotRepository extends JpaRepository<Slot, Long> {
     Page<Slot> findByMedicoIdAndDisponibleTrue(Long medicoId, Pageable pageable);
 
     void deleteByMedicoIdAndDisponibleTrue(Long medicoId);
+
+    boolean existsByMedicoAndFechaHora(Medico medico, LocalDateTime fechaHora);
 }
