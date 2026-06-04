@@ -1,5 +1,6 @@
 package org.gestion.proyecto_sanitario.cita.controller;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.gestion.proyecto_sanitario.cita.dto.request.CitaRequestDto;
@@ -24,6 +25,7 @@ public class CitaController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('PACIENTE', 'ADMIN')")
+    @Transactional
     public ResponseEntity<CitaResponseDto> crearCita(@Valid @RequestBody CitaRequestDto dto) {
         var response = citaService.crearCita(dto);
         return ResponseEntity.ok(response);
@@ -31,6 +33,7 @@ public class CitaController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO')")
+    @Transactional
     public ResponseEntity<Page<CitaResponseDto>> findAll(Pageable pageable, @AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername();
         String role = userDetails.getAuthorities().iterator().next().getAuthority();
@@ -44,6 +47,7 @@ public class CitaController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO', 'PACIENTE')")
+    @Transactional
     public ResponseEntity<CitaResponseDto> findById(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername();
         String role = userDetails.getAuthorities().iterator().next().getAuthority();
@@ -63,12 +67,14 @@ public class CitaController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('MEDICO', 'ADMIN')")
+    @Transactional
     public ResponseEntity<CitaResponseDto> updateCita(@PathVariable Long id, @Valid @RequestBody UpdateCitaRequestDto dto) {
         return ResponseEntity.ok(citaService.updateCita(id, dto));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
     public ResponseEntity<Void> deleteCita(@PathVariable Long id) {
         citaService.deleteCita(id);
         return ResponseEntity.noContent().build();
@@ -76,6 +82,7 @@ public class CitaController {
 
     @GetMapping("/paciente/{pacienteId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO')")
+    @Transactional
     public ResponseEntity<Page<CitaResponseDto>> findbyPacienteId(@PathVariable Long pacienteId, Pageable pageable) {
         var response = citaService.findbyPacienteId(pacienteId, pageable);
         return ResponseEntity.ok(response);
@@ -83,6 +90,7 @@ public class CitaController {
 
     @PostMapping("/{id}/cancelar")
     @PreAuthorize("hasAnyRole('PACIENTE', 'ADMIN')")
+    @Transactional
     public ResponseEntity<CitaResponseDto> cancelarCita(@PathVariable Long id) {
         var response = citaService.cancelarCita(id);
         return ResponseEntity.ok(response);
@@ -90,6 +98,7 @@ public class CitaController {
 
     @GetMapping("/estado/{estado}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO', 'PACIENTE')")
+    @Transactional
     public ResponseEntity<Page<CitaResponseDto>> findByEstado(@PathVariable EstadoCita estado, Pageable pageable) {
         var response = citaService.findByEstado(estado, pageable);
         return ResponseEntity.ok(response);

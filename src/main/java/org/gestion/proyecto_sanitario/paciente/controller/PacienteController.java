@@ -1,5 +1,6 @@
 package org.gestion.proyecto_sanitario.paciente.controller;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.gestion.proyecto_sanitario.paciente.dto.request.PacienteRequestDto;
@@ -19,6 +20,7 @@ public class PacienteController {
     private final PacienteService pacienteService;
 
     @PostMapping
+    @Transactional
     public ResponseEntity<PacienteResponseDto> crearPaciente(@Valid @RequestBody PacienteRequestDto dto) {
         var response = pacienteService.crearPaciente(dto);
         return ResponseEntity.ok(response);
@@ -26,6 +28,7 @@ public class PacienteController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO')")
+    @Transactional
     public ResponseEntity<Page<PacienteResponseDto>> findAll(Pageable pageable) {
         var response = pacienteService.findAll(pageable);
         return ResponseEntity.ok(response);
@@ -33,6 +36,7 @@ public class PacienteController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO')")
+    @Transactional
     public ResponseEntity<PacienteResponseDto> findById(@PathVariable Long id) {
         var response = pacienteService.findById(id);
         return ResponseEntity.ok(response);
@@ -40,12 +44,14 @@ public class PacienteController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('PACIENTE')")
+    @Transactional
     public ResponseEntity<PacienteResponseDto> updatePaciente(@PathVariable Long id, @Valid @RequestBody PacienteRequestDto dto) {
         return ResponseEntity.ok(pacienteService.updatePaciente(id, dto));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
     public ResponseEntity<Void> deletePaciente(@PathVariable Long id) {
         pacienteService.deletePaciente(id);
         return ResponseEntity.noContent().build();
@@ -53,6 +59,7 @@ public class PacienteController {
 
     @GetMapping("/nif/{nif}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO')")
+    @Transactional
     public ResponseEntity<PacienteResponseDto> findByNif(@PathVariable String nif) {
         var response = pacienteService.findByNif(nif);
         return ResponseEntity.ok(response);

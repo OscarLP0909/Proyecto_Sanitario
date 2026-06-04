@@ -1,5 +1,6 @@
 package org.gestion.proyecto_sanitario.medico.controller;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.gestion.proyecto_sanitario.medico.dto.request.SlotRequestDto;
@@ -20,6 +21,7 @@ public class SlotController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO')")
+    @Transactional
     public ResponseEntity<Page<SlotResponseDto>> findAll(Pageable pageable) {
         var response = slotService.findAll(pageable);
         return ResponseEntity.ok(response);

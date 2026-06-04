@@ -1,5 +1,6 @@
 package org.gestion.proyecto_sanitario.disponibilidad.controller;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.gestion.proyecto_sanitario.disponibilidad.dto.request.DisponibilidadRequestDto;
@@ -21,6 +22,7 @@ public class DisponibilidadController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
     public ResponseEntity<DisponibilidadResponseDto> crearDisponibilidad(@Valid @RequestBody DisponibilidadRequestDto dto) {
         var response = disponibilidadService.crearDisponibilidad(dto);
         return ResponseEntity.ok(response);
@@ -28,6 +30,7 @@ public class DisponibilidadController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO')")
+    @Transactional
     public ResponseEntity<Page<DisponibilidadResponseDto>> findAll(Pageable pageable) {
         var response = disponibilidadService.findAll(pageable);
         return ResponseEntity.ok(response);
@@ -35,6 +38,7 @@ public class DisponibilidadController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO')")
+    @Transactional
     public ResponseEntity<DisponibilidadResponseDto> findById(@PathVariable Long id) {
         var response = disponibilidadService.findById(id);
         return ResponseEntity.ok(response);
@@ -42,6 +46,7 @@ public class DisponibilidadController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
     public ResponseEntity<DisponibilidadResponseDto> updateDisponibilidad(@PathVariable Long id, @Valid @RequestBody DisponibilidadRequestDto dto) {
         var response = disponibilidadService.updateDisponibilidad(id, dto);
         return ResponseEntity.ok(response);
@@ -49,6 +54,7 @@ public class DisponibilidadController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
     public ResponseEntity<Void> deleteDisponibilidad(@PathVariable Long id) {
         disponibilidadService.deleteDisponibilidad(id);
         return ResponseEntity.noContent().build();
@@ -56,6 +62,7 @@ public class DisponibilidadController {
 
     @GetMapping("/medico/{medicoId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO', 'PACIENTE')")
+    @Transactional
     public ResponseEntity<Page<DisponibilidadResponseDto>> findByMedicoId(@PathVariable Long medicoId, Pageable pageable) {
         var response = disponibilidadService.findByMedicoId(medicoId, pageable);
         return ResponseEntity.ok(response);
@@ -63,6 +70,7 @@ public class DisponibilidadController {
 
     @GetMapping("/diaSemana/{diaSemana}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO')")
+    @Transactional
     public ResponseEntity<Page<DisponibilidadResponseDto>> findByDiaSemana(@PathVariable DiaSemana diaSemana, Pageable pageable) {
         var response = disponibilidadService.findbyDiaSemana(diaSemana, pageable);
         return ResponseEntity.ok(response);
@@ -70,6 +78,7 @@ public class DisponibilidadController {
 
     @GetMapping("/medico/{medicoId}/diaSemana/{diaSemana}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO', 'PACIENTE')")
+    @Transactional
     public ResponseEntity<Page<DisponibilidadResponseDto>> findByMedicoIdAndDiaSemana(@PathVariable Long medicoId, @PathVariable DiaSemana diaSemana, Pageable pageable) {
         var response = disponibilidadService.findByMedicoIdAndDiaSemana(medicoId, diaSemana, pageable);
         return ResponseEntity.ok(response);

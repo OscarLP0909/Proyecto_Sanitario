@@ -8,7 +8,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Data
 @NoArgsConstructor
@@ -30,5 +32,5 @@ public class PacienteRequestDto {
     private String nif;
 
     @NotNull(message = "La fecha de nacimiento es obligatoria")
-    private LocalDateTime fechaNacimiento;
+    private LocalDate fechaNacimiento;
 }

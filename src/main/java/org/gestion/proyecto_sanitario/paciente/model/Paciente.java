@@ -6,7 +6,9 @@ import org.gestion.proyecto_sanitario.auth.model.User;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "pacientes")
@@ -34,7 +36,7 @@ public class Paciente {
     private String nif;
 
     @Column(nullable = false)
-    private LocalDateTime fechaNacimiento;
+    private LocalDate fechaNacimiento;
 
     @Column(updatable = false)
     @CreationTimestamp

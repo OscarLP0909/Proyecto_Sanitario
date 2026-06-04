@@ -15,10 +15,10 @@ import java.time.LocalTime;
 @Builder
 public class DisponibilidadRequestDto {
 
-    @NotBlank(message = "El ID del médico es obligatorio")
+    @NotNull(message = "El ID del médico es obligatorio")
     private Long medicoId;
 
-    @NotBlank(message = "El dia de la semana es obligatorio")
+    @NotNull(message = "El dia de la semana es obligatorio")
     private DiaSemana diaSemana;
 
     @NotNull(message = "La hora de inicio es obligatoria")

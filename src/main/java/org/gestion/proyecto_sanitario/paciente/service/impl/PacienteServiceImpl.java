@@ -33,6 +33,7 @@ public class PacienteServiceImpl implements PacienteService {
         message.setTo(email);
         message.setSubject("Bienvenido al sistema sanitario");
         message.setText("Sus credenciales de acceso:\nEmail: " + email + "\nContraseña temporal: " + password);
+        message.setText("No comparta esta contraseña con nadie. Por favor, cambie su contraseña después de iniciar sesión por primera vez.");
         mailSender.send(message);
     }
 
