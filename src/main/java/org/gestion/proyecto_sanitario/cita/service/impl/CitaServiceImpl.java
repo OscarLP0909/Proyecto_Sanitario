@@ -101,4 +101,12 @@ public class CitaServiceImpl implements CitaService {
         return citaRepository.findByEstado(estado, pageable)
                 .map(citaMapper::toResponseDto);
     }
+
+    @Override
+    public Page<CitaResponseDto> findBySlotMedicoUserEmail(String email, Pageable pageable) {
+        return citaRepository.findBySlotMedicoUserEmail(email, pageable)
+                .map(citaMapper::toResponseDto);
+    }
+
+
 }

@@ -24,4 +24,6 @@ public interface CitaService {
     CitaResponseDto cancelarCita(Long id);
 
     Page<CitaResponseDto> findByEstado(EstadoCita estado, Pageable pageable);
+
+    Page<CitaResponseDto> findBySlotMedicoUserEmail(String email, Pageable pageable);
 }

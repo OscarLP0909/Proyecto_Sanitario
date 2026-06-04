@@ -11,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,18 +31,34 @@ public class CitaController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO')")
-    //TODO: filtrar por médico autenticado
-    public ResponseEntity<Page<CitaResponseDto>> findAll(Pageable pageable) {
-        var response = citaService.findAll(pageable);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Page<CitaResponseDto>> findAll(Pageable pageable, @AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        String role = userDetails.getAuthorities().iterator().next().getAuthority();
+
+        if (role.equals("ROLE_ADMIN")) {
+            return ResponseEntity.ok(citaService.findAll(pageable));
+        } else {
+            return ResponseEntity.ok(citaService.findBySlotMedicoUserEmail(email, pageable));
+        }
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO', 'PACIENTE')")
-    //TODO: validar que el paciente o médico autenticado tenga acceso a sus citas
-    public ResponseEntity<CitaResponseDto> findById(@PathVariable Long id) {
-        var response = citaService.findById(id);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<CitaResponseDto> findById(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        String role = userDetails.getAuthorities().iterator().next().getAuthority();
+
+        var cita = citaService.findById(id);
+
+        assert role != null;
+
+        if (role.equals("ROLE_MEDICO") && !cita.getSlot().getMedico().getEmail().equals(email)) {
+            return ResponseEntity.status(403).build();
+        }
+        if (role.equals("ROLE_PACIENTE") && !cita.getPaciente().getEmail().equals(email)) {
+            return ResponseEntity.status(403).build();
+        }
+        return ResponseEntity.ok(cita);
     }
 
     @PutMapping("/{id}")
