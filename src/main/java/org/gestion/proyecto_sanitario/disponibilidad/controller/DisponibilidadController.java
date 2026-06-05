@@ -21,7 +21,7 @@ public class DisponibilidadController {
     private final DisponibilidadService disponibilidadService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MEDICO')")
     @Transactional
     public ResponseEntity<DisponibilidadResponseDto> crearDisponibilidad(@Valid @RequestBody DisponibilidadRequestDto dto) {
         var response = disponibilidadService.crearDisponibilidad(dto);

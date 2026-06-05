@@ -1,0 +1,120 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Pacientes</h1>
+      <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">{{ items().length }} pacientes registrados</p>
+    </div>
+    <button (click)="openCreate()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
+      <span>+</span> Nuevo paciente
+    </button>
+  </div>
+
+  <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+    <input type="text" placeholder="Buscar por nombre, email o NIF..." [value]="searchTerm()" (input)="searchTerm.set($any($event.target).value); page.set(0)"
+      class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" />
+  </div>
+
+  <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+    <app-spinner [show]="loading()" />
+    @if (!loading()) {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <tr>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Nombre</th>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Email</th>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">NIF</th>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Fecha Nac.</th>
+              <th class="text-right px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            @for (item of paginated; track item.id) {
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-semibold text-xs">
+                      {{ item.name.charAt(0) }}{{ item.surname.charAt(0) }}
+                    </div>
+                    <span class="font-medium text-gray-900 dark:text-white">{{ item.name }} {{ item.surname }}</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.email }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.nif }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ formatFecha(item.fechaNacimiento) }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-end gap-2">
+                    <button (click)="openEdit(item)" class="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">Editar</button>
+                    <button (click)="delete(item)" class="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+            }
+            @empty {
+              <tr><td colspan="5" class="px-4 py-12 text-center text-gray-400">No se encontraron pacientes</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (totalPages > 1) {
+        <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+          <span>Página {{ page() + 1 }} de {{ totalPages }}</span>
+          <div class="flex gap-2">
+            <button [disabled]="page() === 0" (click)="page.update(p => p - 1)" class="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">← Anterior</button>
+            <button [disabled]="page() >= totalPages - 1" (click)="page.update(p => p + 1)" class="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Siguiente →</button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@if (showModal()) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ editing() ? 'Editar paciente' : 'Nuevo paciente' }}</h2>
+        <button (click)="showModal.set(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">&times;</button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="save()" class="p-6 space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Nombre *</label>
+            <input type="text" formControlName="name" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" [class.border-red-400]="isInvalid('name')" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Apellidos *</label>
+            <input type="text" formControlName="surname" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" [class.border-red-400]="isInvalid('surname')" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email *</label>
+          <input type="email" formControlName="email" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" [class.border-red-400]="isInvalid('email')" />
+        </div>
+        @if (!editing()) {
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Contraseña *</label>
+            <input type="password" formControlName="password" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" />
+          </div>
+        }
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">NIF *</label>
+            <input type="text" formControlName="nif" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" [class.border-red-400]="isInvalid('nif')" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Fecha Nac. *</label>
+            <input type="date" formControlName="fechaNacimiento" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" [class.border-red-400]="isInvalid('fechaNacimiento')" />
+          </div>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" (click)="showModal.set(false)" class="flex-1 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Cancelar</button>
+          <button type="submit" [disabled]="saving()" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+            @if (saving()) { <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> }
+            {{ editing() ? 'Guardar cambios' : 'Crear paciente' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -22,6 +22,5 @@ public class CitaRequestDto {
     @NotBlank(message = "El motivo de la cita es obligatorio")
     private String motivo;
 
-    @NotBlank(message = "Las notas de la cita son obligatorias")
-    private String notas;
+    private String notas = "";
 }

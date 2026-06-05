@@ -1,0 +1,64 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Mis Citas</h1>
+      <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Historial y próximas citas</p>
+    </div>
+    <select [value]="filterEstado()" (change)="filterEstado.set($any($event.target).value)"
+      class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors">
+      <option value="">Todos los estados</option>
+      @for (e of estados; track e) { <option [value]="e">{{ e }}</option> }
+    </select>
+  </div>
+
+  <app-spinner [show]="loading()" />
+
+  @if (!loading()) {
+    <div class="space-y-3">
+      @for (item of filtered; track item.id) {
+        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl">
+                👨‍⚕️
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-900 dark:text-white">{{ citaMedicoNombre(item) }}</h3>
+                @if (citaEspecialidad(item) !== '—') {
+                  <p class="text-sm text-purple-600 dark:text-purple-400">{{ citaEspecialidad(item) }}</p>
+                }
+                <div class="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span>📅 {{ citaFecha(item) }}</span>
+                  <span>🕐 {{ citaHora(item) }}</span>
+                </div>
+                @if (item.motivo) {
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ item.motivo }}</p>
+                }
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-3">
+              <span class="px-2.5 py-1 rounded-full text-xs font-medium" [class]="estadoBadgeClass(item.estado)">
+                {{ item.estado }}
+              </span>
+              @if (item.estado === 'PENDIENTE' || item.estado === 'CONFIRMADA') {
+                <button
+                  (click)="cancelar(item)"
+                  class="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 transition-colors"
+                >
+                  Cancelar cita
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+      @empty {
+        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 py-16 text-center">
+          <p class="text-4xl mb-3">📋</p>
+          <p class="text-gray-500 dark:text-gray-400">No tienes citas registradas</p>
+          <a routerLink="/slots" class="text-sm text-blue-600 hover:underline mt-2 block">Reservar una cita →</a>
+        </div>
+      }
+    </div>
+  }
+</div>

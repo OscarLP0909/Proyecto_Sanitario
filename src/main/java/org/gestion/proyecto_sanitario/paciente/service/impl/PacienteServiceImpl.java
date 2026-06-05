@@ -32,8 +32,8 @@ public class PacienteServiceImpl implements PacienteService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
         message.setSubject("Bienvenido al sistema sanitario");
-        message.setText("Sus credenciales de acceso:\nEmail: " + email + "\nContraseña temporal: " + password);
-        message.setText("No comparta esta contraseña con nadie. Por favor, cambie su contraseña después de iniciar sesión por primera vez.");
+        message.setText("Sus credenciales de acceso:\nEmail: " + email + "\nContraseña temporal: " + password
+                + "\n\nNo comparta esta contraseña con nadie. Por favor, cambie su contraseña tras el primer inicio de sesión.");
         mailSender.send(message);
     }
 
@@ -43,10 +43,17 @@ public class PacienteServiceImpl implements PacienteService {
         if(pacienteRepository.findByNif(dto.getNif()).isPresent()) {
             throw new IllegalArgumentException("Ya existe un paciente con ese NIF");
         }
-        String passTemporal = UUID.randomUUID().toString().substring(0, 8);
+        if(userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Ya existe un usuario con ese email");
+        }
+        // Si el DTO trae contraseña (auto-registro), la usamos; si no, generamos una temporal
+        String password = (dto.getPassword() != null && !dto.getPassword().isBlank())
+                ? dto.getPassword()
+                : UUID.randomUUID().toString().substring(0, 8);
+
         User user = User.builder()
                 .email(dto.getEmail())
-                .password(passwordEncoder.encode(passTemporal))
+                .password(passwordEncoder.encode(password))
                 .role(org.gestion.proyecto_sanitario.auth.model.Role.PACIENTE)
                 .activo(true)
                 .build();
@@ -54,7 +61,16 @@ public class PacienteServiceImpl implements PacienteService {
         Paciente paciente = pacienteMapper.toEntity(dto);
         paciente.setUser(user);
         var saved = pacienteRepository.save(paciente);
-        enviarEmailCredenciales(dto.getEmail(), passTemporal);
+
+        // Solo enviamos email si la contraseña fue generada (admin creó el paciente)
+        if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+            try {
+                enviarEmailCredenciales(dto.getEmail(), password);
+            } catch (Exception ignored) {
+                // El email no es crítico — el paciente ya fue creado
+            }
+        }
+
         return pacienteMapper.toResponseDto(saved);
     }
 
@@ -95,6 +111,13 @@ public class PacienteServiceImpl implements PacienteService {
     @Override
     public PacienteResponseDto findByNif(String nif) {
         return pacienteRepository.findByNif(nif)
+                .map(pacienteMapper::toResponseDto)
+                .orElseThrow(() -> new IllegalArgumentException("Paciente no encontrado"));
+    }
+
+    @Override
+    public PacienteResponseDto findMe(String email) {
+        return pacienteRepository.findByUserEmail(email)
                 .map(pacienteMapper::toResponseDto)
                 .orElseThrow(() -> new IllegalArgumentException("Paciente no encontrado"));
     }

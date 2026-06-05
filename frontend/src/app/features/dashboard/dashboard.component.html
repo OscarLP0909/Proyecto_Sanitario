@@ -1,0 +1,225 @@
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+      Bienvenido, {{ auth.userFullName() }}
+    </h1>
+    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
+      {{ role === 'ADMIN' ? 'Panel de administración' : role === 'MEDICO' ? 'Panel médico' : role === 'PACIENTE' ? 'Panel de paciente' : '' }}
+    </p>
+  </div>
+
+  <app-spinner [show]="loading()" />
+
+  @if (!loading()) {
+    <!-- ADMIN Dashboard -->
+    @if (role === 'ADMIN') {
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Médicos</span>
+            <span class="text-2xl">👨‍⚕️</span>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ totalMedicos() }}</p>
+          <a routerLink="/medicos" class="text-xs text-blue-600 hover:underline mt-2 block">Ver todos →</a>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Pacientes</span>
+            <span class="text-2xl">🧑‍🤝‍🧑</span>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ totalPacientes() }}</p>
+          <a routerLink="/pacientes" class="text-xs text-blue-600 hover:underline mt-2 block">Ver todos →</a>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Citas Hoy</span>
+            <span class="text-2xl">📅</span>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ citasHoy.length }}</p>
+          <a routerLink="/citas" class="text-xs text-blue-600 hover:underline mt-2 block">Ver citas →</a>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Citas Pendientes</span>
+            <span class="text-2xl">⏳</span>
+          </div>
+          <p class="text-3xl font-bold text-amber-500">{{ citasPendientes.length }}</p>
+          <a routerLink="/citas" class="text-xs text-blue-600 hover:underline mt-2 block">Gestionar →</a>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <h2 class="text-base font-semibold text-gray-800 dark:text-white mb-4">Accesos rápidos</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <a routerLink="/medicos" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer">
+            <span class="text-2xl">👨‍⚕️</span>
+            <span class="text-xs font-medium text-blue-700 dark:text-blue-400">Médicos</span>
+          </a>
+          <a routerLink="/pacientes" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors cursor-pointer">
+            <span class="text-2xl">🧑‍🤝‍🧑</span>
+            <span class="text-xs font-medium text-emerald-700 dark:text-emerald-400">Pacientes</span>
+          </a>
+          <a routerLink="/especialidades" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors cursor-pointer">
+            <span class="text-2xl">🏥</span>
+            <span class="text-xs font-medium text-purple-700 dark:text-purple-400">Especialidades</span>
+          </a>
+          <a routerLink="/citas" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors cursor-pointer">
+            <span class="text-2xl">📋</span>
+            <span class="text-xs font-medium text-amber-700 dark:text-amber-400">Citas</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h2 class="text-base font-semibold text-gray-800 dark:text-white">Citas recientes</h2>
+          <a routerLink="/citas" class="text-sm text-blue-600 hover:underline">Ver todas →</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Paciente</th>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Médico</th>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Fecha / Hora</th>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+              @for (cita of citas().slice(0, 5); track cita.id) {
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white">{{ citaPacienteNombre(cita) }}</td>
+                  <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ citaMedicoNombre(cita) }}</td>
+                  <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ citaFecha(cita) }} {{ citaHora(cita) }}</td>
+                  <td class="px-4 py-3">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium" [class]="estadoBadgeClass(cita.estado)">{{ cita.estado }}</span>
+                  </td>
+                </tr>
+              }
+              @empty {
+                <tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">No hay citas registradas</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- MEDICO Dashboard -->
+    @if (role === 'MEDICO') {
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Citas Hoy</span>
+            <span class="text-2xl">📅</span>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ citasHoy.length }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Pendientes</span>
+            <span class="text-2xl">⏳</span>
+          </div>
+          <p class="text-3xl font-bold text-amber-500">{{ citasPendientes.length }}</p>
+        </div>
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Citas</span>
+            <span class="text-2xl">📋</span>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ citas().length }}</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h2 class="text-base font-semibold text-gray-800 dark:text-white">Mis próximas citas</h2>
+          <a routerLink="/citas" class="text-sm text-blue-600 hover:underline">Ver todas →</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Paciente</th>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Fecha</th>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Hora</th>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+              @for (cita of citas().slice(0, 8); track cita.id) {
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white">{{ citaPacienteNombre(cita) }}</td>
+                  <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ citaFecha(cita) }}</td>
+                  <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ citaHora(cita) }}</td>
+                  <td class="px-4 py-3">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium" [class]="estadoBadgeClass(cita.estado)">{{ cita.estado }}</span>
+                  </td>
+                </tr>
+              }
+              @empty {
+                <tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">No hay citas</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- PACIENTE Dashboard -->
+    @if (role === 'PACIENTE') {
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Mis Citas</span>
+            <span class="text-2xl">📋</span>
+          </div>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ misCitas().length }}</p>
+          <a routerLink="/mis-citas" class="text-xs text-blue-600 hover:underline mt-2 block">Ver mis citas →</a>
+        </div>
+        <a routerLink="/slots" class="bg-blue-600 rounded-xl p-5 border border-blue-700 shadow-sm cursor-pointer hover:bg-blue-700 transition-colors block">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-blue-100">Reservar Cita</span>
+            <span class="text-2xl">✚</span>
+          </div>
+          <p class="text-base font-semibold text-white">Ver disponibilidad</p>
+          <p class="text-xs text-blue-200 mt-1">Consulta los slots disponibles</p>
+        </a>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h2 class="text-base font-semibold text-gray-800 dark:text-white">Próximas citas</h2>
+          <a routerLink="/mis-citas" class="text-sm text-blue-600 hover:underline">Ver todas →</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Médico</th>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Especialidad</th>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Fecha / Hora</th>
+                <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+              @for (cita of misCitas().slice(0, 5); track cita.id) {
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <td class="px-4 py-3 text-gray-900 dark:text-white">{{ citaMedicoNombre(cita) }}</td>
+                  <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ citaEspecialidad(cita) }}</td>
+                  <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ citaFecha(cita) }} {{ citaHora(cita) }}</td>
+                  <td class="px-4 py-3">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium" [class]="estadoBadgeClass(cita.estado)">{{ cita.estado }}</span>
+                  </td>
+                </tr>
+              }
+              @empty {
+                <tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">No tienes citas programadas</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+</div>

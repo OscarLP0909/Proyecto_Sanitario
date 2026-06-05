@@ -8,6 +8,7 @@ import org.gestion.proyecto_sanitario.medico.model.Medico;
 import org.gestion.proyecto_sanitario.medico.repository.MedicoRepository;
 import org.gestion.proyecto_sanitario.medico.repository.SlotRepository;
 import org.gestion.proyecto_sanitario.medico.service.SlotService;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -63,6 +64,7 @@ public class SlotServiceImpl implements SlotService {
     }
 
     @Override
+    @Transactional
     public Page<SlotResponseDto> findSlotsByMedicoDisponibles(Long medicoId, Pageable pageable) {
         return slotRepository.findByMedicoIdAndDisponibleTrue(medicoId, pageable)
                 .map(slotMapper::toResponseDto);

@@ -20,4 +20,7 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
 
     // Buscar por email del médico
     Page<Cita> findBySlotMedicoUserEmail(String email, Pageable pageable);
+
+    // Buscar por email del paciente
+    Page<Cita> findByPacienteUserEmail(String email, Pageable pageable);
 }

@@ -1,0 +1,105 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Disponibilidades</h1>
+      <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Horarios de disponibilidad médica</p>
+    </div>
+    <button (click)="openCreate()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
+      <span>+</span> Nueva disponibilidad
+    </button>
+  </div>
+
+  <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+    <app-spinner [show]="loading()" />
+    @if (!loading()) {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <tr>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Médico</th>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Día</th>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Hora inicio</th>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Hora fin</th>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Duración</th>
+              <th class="text-right px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            @for (item of items(); track item.id) {
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ medicoNombre(item.medico) }}</td>
+                <td class="px-4 py-3">
+                  <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium">{{ item.diaSemana }}</span>
+                </td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.horaInicio.substring(0, 5) }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.horaFin.substring(0, 5) }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ item.duracionMinutos ?? 30 }} min</td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-end gap-2">
+                    <button (click)="openEdit(item)" class="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">Editar</button>
+                    <button (click)="delete(item)" class="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+            }
+            @empty {
+              <tr><td colspan="6" class="px-4 py-12 text-center text-gray-400">No hay disponibilidades configuradas</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+@if (showModal()) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ editing() ? 'Editar disponibilidad' : 'Nueva disponibilidad' }}</h2>
+        <button (click)="showModal.set(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">&times;</button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="save()" class="p-6 space-y-4">
+        @if (isAdmin()) {
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Médico *</label>
+            <select formControlName="medicoId" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" [class.border-red-400]="isInvalid('medicoId')">
+              <option [value]="null">Seleccionar médico</option>
+              @for (m of medicos(); track m.id) {
+                <option [value]="m.id">{{ medicoNombre(m) }}</option>
+              }
+            </select>
+          </div>
+        }
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Día de la semana *</label>
+          <select formControlName="diaSemana" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" [class.border-red-400]="isInvalid('diaSemana')">
+            <option value="">Seleccionar día</option>
+            @for (dia of dias; track dia) { <option [value]="dia">{{ dia }}</option> }
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Hora inicio *</label>
+            <input type="time" formControlName="horaInicio" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" [class.border-red-400]="isInvalid('horaInicio')" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Hora fin *</label>
+            <input type="time" formControlName="horaFin" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" [class.border-red-400]="isInvalid('horaFin')" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Duración (minutos)</label>
+          <input type="number" formControlName="duracionMinutos" min="5" max="120" step="5" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" />
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" (click)="showModal.set(false)" class="flex-1 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Cancelar</button>
+          <button type="submit" [disabled]="saving()" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+            @if (saving()) { <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> }
+            {{ editing() ? 'Guardar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

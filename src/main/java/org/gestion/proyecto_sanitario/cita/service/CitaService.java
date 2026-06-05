@@ -23,7 +23,11 @@ public interface CitaService {
 
     CitaResponseDto cancelarCita(Long id);
 
+    CitaResponseDto cambiarEstado(Long id, EstadoCita nuevoEstado);
+
     Page<CitaResponseDto> findByEstado(EstadoCita estado, Pageable pageable);
 
     Page<CitaResponseDto> findBySlotMedicoUserEmail(String email, Pageable pageable);
+
+    Page<CitaResponseDto> findByPacienteUserEmail(String email, Pageable pageable);
 }

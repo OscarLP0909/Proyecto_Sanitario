@@ -118,4 +118,12 @@ public class MedicoServiceImpl implements MedicoService {
                 .map(medicoMapper::toResponseDto)
                 .orElseThrow(() -> new IllegalArgumentException("Medico no encontrado"));
     }
+
+    @Override
+    @Transactional
+    public MedicoResponseDto findMe(String email) {
+        return medicoRepository.findByUserEmail(email)
+                .map(medicoMapper::toResponseDto)
+                .orElseThrow(() -> new IllegalArgumentException("Médico no encontrado para el usuario autenticado"));
+    }
 }

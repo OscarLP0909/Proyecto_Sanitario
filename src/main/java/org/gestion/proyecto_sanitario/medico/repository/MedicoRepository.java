@@ -9,9 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MedicoRepository extends JpaRepository<Medico, Long> {
-    // Buscar médico por nif
     Optional<Medico> findByNif(String nif);
-
-    // Buscar médicos por especialidad
+    Optional<Medico> findByUserEmail(String email);
     Page<Medico> findByEspecialidadesId(Long especialidadId, Pageable pageable);
 }

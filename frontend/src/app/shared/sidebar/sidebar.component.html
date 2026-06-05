@@ -1,0 +1,39 @@
+<aside
+  class="flex flex-col h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300"
+  [class.w-64]="!collapsed()"
+  [class.w-16]="collapsed()"
+>
+  <!-- Logo -->
+  <div class="flex items-center gap-3 px-4 py-5 border-b border-gray-200 dark:border-gray-700">
+    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+      S
+    </div>
+    @if (!collapsed()) {
+      <span class="font-semibold text-gray-800 dark:text-white text-sm truncate">
+        Sistema Sanitario
+      </span>
+    }
+    <button
+      (click)="toggle()"
+      class="ml-auto text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+    >
+      {{ collapsed() ? '›' : '‹' }}
+    </button>
+  </div>
+
+  <!-- Nav items -->
+  <nav class="flex-1 py-4 overflow-y-auto scrollbar-thin">
+    @for (item of visibleItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-r-2 border-blue-600"
+        class="flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+      >
+        <span class="text-lg flex-shrink-0">{{ item.icon }}</span>
+        @if (!collapsed()) {
+          <span class="text-sm font-medium">{{ item.label }}</span>
+        }
+      </a>
+    }
+  </nav>
+</aside>

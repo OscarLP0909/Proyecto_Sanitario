@@ -5,6 +5,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
+import org.gestion.proyecto_sanitario.auth.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -26,11 +27,18 @@ public class JwtService {
     }
 
     public String generateToken(UserDetails userDetails) {
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .setSubject(userDetails.getUsername())
-                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey)), SignatureAlgorithm.HS256)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime));
+
+        if (userDetails instanceof User user) {
+            builder.claim("role", user.getRole().name())
+                   .claim("userId", user.getId());
+        }
+
+        return builder
+                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey)), SignatureAlgorithm.HS256)
                 .compact();
     }
 

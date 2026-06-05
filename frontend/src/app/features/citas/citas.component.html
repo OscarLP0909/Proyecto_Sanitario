@@ -1,0 +1,243 @@
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Citas</h1>
+      <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">{{ items().length }} citas en total</p>
+    </div>
+    @if (isAdmin()) {
+      <button (click)="openCreate()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
+        <span>+</span> Nueva cita
+      </button>
+    }
+  </div>
+
+  <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col sm:flex-row gap-3">
+    <input type="text" placeholder="Buscar por paciente, médico o fecha..." [value]="searchTerm()" (input)="searchTerm.set($any($event.target).value); page.set(0)"
+      class="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" />
+    <select [value]="filterEstado()" (change)="filterEstado.set($any($event.target).value); page.set(0)"
+      class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors">
+      <option value="">Todos los estados</option>
+      @for (e of estados; track e) { <option [value]="e">{{ e }}</option> }
+    </select>
+  </div>
+
+  <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+    <app-spinner [show]="loading()" />
+    @if (!loading()) {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <tr>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Paciente</th>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Médico</th>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Especialidad</th>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Fecha / Hora</th>
+              <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Estado</th>
+              <th class="text-right px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            @for (item of paginated; track item.id) {
+              <tr (click)="openDetalle(item)" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+                <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ citaPacienteNombre(item) }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ citaMedicoNombre(item) }}</td>
+                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ citaEspecialidad(item) }}</td>
+                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ citaFecha(item) }} {{ citaHora(item) }}</td>
+                <td class="px-4 py-3">
+                  <span class="px-2 py-1 rounded-full text-xs font-medium" [class]="estadoBadgeClass(item.estado)">{{ item.estado }}</span>
+                </td>
+                <td class="px-4 py-3" (click)="$event.stopPropagation()">
+                  <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                    @if (isMedico()) {
+                      @if (item.estado === 'PENDIENTE') {
+                        <button (click)="confirmar(item)" class="px-2.5 py-1.5 text-xs font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors border border-green-200 dark:border-green-800">
+                          Aceptar
+                        </button>
+                      }
+                      @if (item.estado !== 'CANCELADA' && item.estado !== 'COMPLETADA') {
+                        <button (click)="cancelarMedico(item)" class="px-2.5 py-1.5 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors border border-amber-200 dark:border-amber-800">
+                          Cancelar
+                        </button>
+                      }
+                      @if (esPasada(item) && item.estado !== 'CANCELADA') {
+                        <button (click)="openEditarResultado(item)" class="px-2.5 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors border border-blue-200 dark:border-blue-800">
+                          Final
+                        </button>
+                      }
+                    }
+                    @if (isAdmin()) {
+                      <button (click)="openEdit(item)" class="px-2.5 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">Editar</button>
+                      @if (item.estado !== 'CANCELADA' && item.estado !== 'COMPLETADA') {
+                        <button (click)="cancelar(item)" class="px-2.5 py-1.5 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors">Cancelar</button>
+                      }
+                      <button (click)="delete(item)" class="px-2.5 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">Eliminar</button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+            @empty {
+              <tr><td colspan="6" class="px-4 py-12 text-center text-gray-400">No se encontraron citas</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (totalPages > 1) {
+        <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+          <span>Página {{ page() + 1 }} de {{ totalPages }} ({{ filtered.length }} resultados)</span>
+          <div class="flex gap-2">
+            <button [disabled]="page() === 0" (click)="page.update(p => p - 1)" class="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">← Anterior</button>
+            <button [disabled]="page() >= totalPages - 1" (click)="page.update(p => p + 1)" class="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">Siguiente →</button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- Modal ADMIN: crear/editar cita -->
+@if (showModal()) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ editing() ? 'Editar cita' : 'Nueva cita' }}</h2>
+        <button (click)="showModal.set(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">&times;</button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="save()" class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Paciente *</label>
+          <select formControlName="pacienteId" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" [class.border-red-400]="isInvalid('pacienteId')">
+            <option [value]="null">Seleccionar paciente</option>
+            @for (p of pacientes(); track p.id) { <option [value]="p.id">{{ p.name }} {{ p.surname }}</option> }
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Slot disponible *</label>
+          <select formControlName="slotId" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors" [class.border-red-400]="isInvalid('slotId')">
+            <option [value]="null">Seleccionar slot</option>
+            @for (s of slots(); track s.id) { <option [value]="s.id">{{ slotLabel(s) }}</option> }
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Motivo *</label>
+          <textarea formControlName="motivo" rows="2" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors resize-none" [class.border-red-400]="isInvalid('motivo')"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Notas</label>
+          <textarea formControlName="notas" rows="2" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" (click)="showModal.set(false)" class="flex-1 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Cancelar</button>
+          <button type="submit" [disabled]="saving()" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+            @if (saving()) { <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> }
+            {{ editing() ? 'Guardar' : 'Crear cita' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Modal: detalle de cita -->
+@if (showDetalle() && detalleCita()) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4" (click)="showDetalle.set(false)">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Detalle de la cita</h2>
+        <button (click)="showDetalle.set(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">&times;</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <!-- Estado -->
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Estado</span>
+          <span class="px-3 py-1 rounded-full text-sm font-medium" [class]="estadoBadgeClass(detalleCita()!.estado)">{{ detalleCita()!.estado }}</span>
+        </div>
+
+        <div class="border-t border-gray-100 dark:border-gray-800"></div>
+
+        <!-- Paciente -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Paciente</p>
+            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ citaPacienteNombre(detalleCita()!) }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Médico</p>
+            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ citaMedicoNombre(detalleCita()!) }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Especialidad</p>
+            <p class="text-sm text-gray-700 dark:text-gray-300">{{ citaEspecialidad(detalleCita()!) }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Fecha y hora</p>
+            <p class="text-sm text-gray-700 dark:text-gray-300">{{ citaFecha(detalleCita()!) }} · {{ citaHora(detalleCita()!) }}</p>
+          </div>
+        </div>
+
+        <div class="border-t border-gray-100 dark:border-gray-800"></div>
+
+        <!-- Motivo -->
+        @if (detalleCita()!.motivo) {
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Motivo</p>
+            <p class="text-sm text-gray-700 dark:text-gray-300">{{ detalleCita()!.motivo }}</p>
+          </div>
+        }
+
+        <!-- Notas -->
+        @if (detalleCita()!.notas) {
+          <div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Notas / Observaciones</p>
+            <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ detalleCita()!.notas }}</p>
+          </div>
+        }
+
+        @if (!detalleCita()!.motivo && !detalleCita()!.notas) {
+          <p class="text-sm text-gray-400 italic">Sin motivo ni notas registradas.</p>
+        }
+      </div>
+      <div class="px-6 pb-6">
+        <button (click)="showDetalle.set(false)" class="w-full py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal MEDICO: resultado de la cita (fecha pasada) -->
+@if (showResultadoModal()) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-40 p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Resultado de la cita</h2>
+        <button (click)="showResultadoModal.set(false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl">&times;</button>
+      </div>
+      <form [formGroup]="resultadoForm" (ngSubmit)="guardarResultado()" class="p-6 space-y-4">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Paciente: <span class="font-medium text-gray-900 dark:text-white">{{ citaPacienteNombre(editingCita()!) }}</span><br>
+          Fecha: <span class="font-medium text-gray-900 dark:text-white">{{ citaFecha(editingCita()!) }} {{ citaHora(editingCita()!) }}</span>
+        </p>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Estado final</label>
+          <select formControlName="estado" class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors">
+            <option value="COMPLETADA">COMPLETADA</option>
+            <option value="CANCELADA">CANCELADA</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Notas / Observaciones</label>
+          <textarea formControlName="notas" rows="4" placeholder="Diagnóstico, tratamiento indicado, observaciones..." class="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none focus:border-blue-500 transition-colors resize-none"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button type="button" (click)="showResultadoModal.set(false)" class="flex-1 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">Cancelar</button>
+          <button type="submit" [disabled]="savingResultado()" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+            @if (savingResultado()) { <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> }
+            Guardar resultado
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

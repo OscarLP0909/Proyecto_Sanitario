@@ -11,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -69,6 +71,13 @@ public class MedicoController {
     @Transactional
     public ResponseEntity<MedicoResponseDto> findByNif(@PathVariable String nif) {
         var response = medicoService.findByNif(nif);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('MEDICO')")
+    public ResponseEntity<MedicoResponseDto> getMe(@AuthenticationPrincipal UserDetails userDetails) {
+        var response = medicoService.findMe(userDetails.getUsername());
         return ResponseEntity.ok(response);
     }
 }

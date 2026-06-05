@@ -23,4 +23,6 @@ public interface MedicoService {
     Page<MedicoResponseDto> findByEspecialidadID(Long especialidadId, Pageable pageable);
 
     MedicoResponseDto findByNif(String nif);
+
+    MedicoResponseDto findMe(String email);
 }

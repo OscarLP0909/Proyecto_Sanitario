@@ -3,6 +3,7 @@ package org.gestion.proyecto_sanitario.cita.controller;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.gestion.proyecto_sanitario.cita.dto.request.CambiarEstadoRequestDto;
 import org.gestion.proyecto_sanitario.cita.dto.request.CitaRequestDto;
 import org.gestion.proyecto_sanitario.cita.dto.request.UpdateCitaRequestDto;
 import org.gestion.proyecto_sanitario.cita.dto.response.CitaResponseDto;
@@ -88,6 +89,13 @@ public class CitaController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/{id}/estado")
+    @PreAuthorize("hasAnyRole('MEDICO', 'ADMIN')")
+    @Transactional
+    public ResponseEntity<CitaResponseDto> cambiarEstado(@PathVariable Long id, @Valid @RequestBody CambiarEstadoRequestDto dto) {
+        return ResponseEntity.ok(citaService.cambiarEstado(id, dto.getEstado()));
+    }
+
     @PostMapping("/{id}/cancelar")
     @PreAuthorize("hasAnyRole('PACIENTE', 'ADMIN')")
     @Transactional
@@ -101,6 +109,14 @@ public class CitaController {
     @Transactional
     public ResponseEntity<Page<CitaResponseDto>> findByEstado(@PathVariable EstadoCita estado, Pageable pageable) {
         var response = citaService.findByEstado(estado, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/mis-citas")
+    @PreAuthorize("hasRole('PACIENTE')")
+    @Transactional
+    public ResponseEntity<Page<CitaResponseDto>> misCitas(Pageable pageable, @AuthenticationPrincipal UserDetails userDetails) {
+        var response = citaService.findByPacienteUserEmail(userDetails.getUsername(), pageable);
         return ResponseEntity.ok(response);
     }
 }

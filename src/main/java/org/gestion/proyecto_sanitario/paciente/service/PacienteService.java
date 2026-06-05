@@ -18,4 +18,6 @@ public interface PacienteService {
     void deletePaciente(Long id);
 
     PacienteResponseDto findByNif(String nif);
+
+    PacienteResponseDto findMe(String email);
 }

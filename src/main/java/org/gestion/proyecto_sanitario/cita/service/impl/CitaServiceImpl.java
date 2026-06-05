@@ -61,9 +61,9 @@ public class CitaServiceImpl implements CitaService {
         var citaExistente = citaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Cita no encontrada"));
 
-        citaExistente.setNotas(dto.getNotas());
-        citaExistente.setMotivo(dto.getMotivo());
         citaExistente.setEstado(dto.getEstado());
+        if (dto.getMotivo() != null) citaExistente.setMotivo(dto.getMotivo());
+        if (dto.getNotas() != null) citaExistente.setNotas(dto.getNotas());
         var updated = citaRepository.save(citaExistente);
         return citaMapper.toResponseDto(updated);
     }
@@ -97,6 +97,14 @@ public class CitaServiceImpl implements CitaService {
     }
 
     @Override
+    public CitaResponseDto cambiarEstado(Long id, EstadoCita nuevoEstado) {
+        var cita = citaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Cita no encontrada"));
+        cita.setEstado(nuevoEstado);
+        return citaMapper.toResponseDto(citaRepository.save(cita));
+    }
+
+    @Override
     public Page<CitaResponseDto> findByEstado(EstadoCita estado, Pageable pageable) {
         return citaRepository.findByEstado(estado, pageable)
                 .map(citaMapper::toResponseDto);
@@ -108,5 +116,9 @@ public class CitaServiceImpl implements CitaService {
                 .map(citaMapper::toResponseDto);
     }
 
-
+    @Override
+    public Page<CitaResponseDto> findByPacienteUserEmail(String email, Pageable pageable) {
+        return citaRepository.findByPacienteUserEmail(email, pageable)
+                .map(citaMapper::toResponseDto);
+    }
 }

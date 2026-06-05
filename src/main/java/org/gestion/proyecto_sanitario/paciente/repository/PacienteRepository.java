@@ -11,4 +11,6 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
     // Buscar por user
     Optional<Paciente> findByUserId(Long userId);
+
+    Optional<Paciente> findByUserEmail(String email);
 }
