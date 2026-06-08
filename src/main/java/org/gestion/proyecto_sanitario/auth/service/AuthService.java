@@ -8,5 +8,9 @@ public interface AuthService {
 
     LoginResponseDto login(LoginRequestDto dto);
 
+    LoginResponseDto refreshToken(String refreshToken);
+
+    void logout(String email);
+
     void changePassword(String email, ChangePasswordRequestDto dto);
 }

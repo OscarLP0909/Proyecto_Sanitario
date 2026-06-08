@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.gestion.proyecto_sanitario.auth.dto.request.ChangePasswordRequestDto;
 import org.gestion.proyecto_sanitario.auth.dto.request.LoginRequestDto;
+import org.gestion.proyecto_sanitario.auth.dto.request.RefreshTokenRequestDto;
 import org.gestion.proyecto_sanitario.auth.dto.response.LoginResponseDto;
 import org.gestion.proyecto_sanitario.auth.service.AuthService;
 import org.gestion.proyecto_sanitario.paciente.dto.request.PacienteRequestDto;
@@ -41,6 +42,19 @@ public class AuthController {
             @Valid @RequestBody ChangePasswordRequestDto dto,
             @AuthenticationPrincipal UserDetails userDetails) {
         authService.changePassword(userDetails.getUsername(), dto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDto> refreshToken(@RequestBody RefreshTokenRequestDto dto) {
+        var response = authService.refreshToken(dto.getRefreshToken());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal UserDetails userDetails) {
+        authService.logout(userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 }
