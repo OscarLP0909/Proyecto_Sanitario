@@ -70,7 +70,9 @@
                       @if (item.estado !== 'CANCELADA' && item.estado !== 'COMPLETADA') {
                         <button (click)="cancelar(item)" class="px-2.5 py-1.5 text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors">Cancelar</button>
                       }
-                      <button (click)="delete(item)" class="px-2.5 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">Eliminar</button>
+                      @if (item.estado !== 'COMPLETADA') {
+                        <button (click)="delete(item)" class="px-2.5 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">Eliminar</button>
+                      }
                     }
                   </div>
                 </td>

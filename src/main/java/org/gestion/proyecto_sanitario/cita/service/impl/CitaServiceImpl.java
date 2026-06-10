@@ -5,6 +5,7 @@ import org.gestion.proyecto_sanitario.cita.dto.request.CitaRequestDto;
 import org.gestion.proyecto_sanitario.cita.dto.request.UpdateCitaRequestDto;
 import org.gestion.proyecto_sanitario.cita.dto.response.CitaResponseDto;
 import org.gestion.proyecto_sanitario.cita.mapper.CitaMapper;
+import org.gestion.proyecto_sanitario.cita.model.Cita;
 import org.gestion.proyecto_sanitario.cita.model.EstadoCita;
 import org.gestion.proyecto_sanitario.cita.repository.CitaRepository;
 import org.gestion.proyecto_sanitario.cita.service.CitaService;
@@ -72,11 +73,12 @@ public class CitaServiceImpl implements CitaService {
     @Override
     public void deleteCita(Long id) {
 
-        if(!citaRepository.existsById(id)) {
-            throw new IllegalArgumentException("Cita no encontrada");
+        Cita cita = citaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Cita no encontrada"));
+        if (cita.getEstado() == EstadoCita.COMPLETADA) {
+            throw new IllegalArgumentException("No se puede eliminar una cita completada");
         }
         citaRepository.deleteById(id);
-
     }
 
     @Override
@@ -87,13 +89,13 @@ public class CitaServiceImpl implements CitaService {
 
     @Override
     public CitaResponseDto cancelarCita(Long id) {
-        var citaExist = citaRepository.findById(id)
-                .map(cita -> {
-                    cita.setEstado(EstadoCita.CANCELADA);
-                    return citaRepository.save(cita);
-                })
+        Cita cita = citaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Cita no encontrada"));
-        return citaMapper.toResponseDto(citaExist);
+        if (cita.getEstado() == EstadoCita.COMPLETADA) {
+            throw new IllegalArgumentException("No se puede cancelar una cita completada");
+        }
+        cita.setEstado(EstadoCita.CANCELADA);
+        return citaMapper.toResponseDto(citaRepository.save(cita));
     }
 
     @Override
