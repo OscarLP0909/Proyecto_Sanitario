@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,11 +29,19 @@ public class CitaServiceImpl implements CitaService {
     private final SlotRepository slotRepository;
     private final JavaMailSender mailSender;
 
-    private void enviarEmailNotificacion(String email) {
+    private void enviarEmailNotificacion(String email, EstadoCita estado) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
         message.setSubject("Estado de su cita médica");
-        message.setText("Su cita ha sido actualizada. Por favor, revise su cuenta para más detalles.");
+
+        String texto = switch (estado) {
+            case PENDIENTE -> "Su cita ha sido registrada y está pendiente de confirmación.";
+            case COMPLETADA -> "Su cita ha sido marcada como completada. Gracias por confiar en nosotros.";
+            case CONFIRMADA -> "Su cita ha sido confirmada. Esperamos verle pronto.";
+            case CANCELADA -> "Su cita ha sido cancelada. Si tiene alguna duda, contacte con nosotros.";
+        };
+
+        message.setText(texto);
         mailSender.send(message);
     }
 
@@ -69,15 +78,26 @@ public class CitaServiceImpl implements CitaService {
     }
 
     @Override
+    @Transactional
     public CitaResponseDto updateCita(Long id, UpdateCitaRequestDto dto) {
         var citaExistente = citaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Cita no encontrada"));
 
-        citaExistente.setEstado(dto.getEstado());
+        if (dto.getEstado() != null) citaExistente.setEstado(dto.getEstado());
         if (dto.getMotivo() != null) citaExistente.setMotivo(dto.getMotivo());
         if (dto.getNotas() != null) citaExistente.setNotas(dto.getNotas());
+
         var updated = citaRepository.save(citaExistente);
-        enviarEmailNotificacion(citaExistente.getPaciente().getUser().getEmail());
+
+        try {
+            String emailPaciente = citaExistente.getPaciente().getUser().getEmail();
+            System.out.println("Enviando email a: " + emailPaciente + " con estado: " + dto.getEstado());
+            if (dto.getEstado() != null) {
+                enviarEmailNotificacion(emailPaciente, dto.getEstado());
+            }
+        } catch (Exception e) {
+            System.err.println("Error al enviar email de notificación: " + e.getMessage());
+        }
         return citaMapper.toResponseDto(updated);
     }
 
