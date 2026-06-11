@@ -123,4 +123,43 @@ public class MedicoServiceImplTest {
 
          verify(medicoRepository).deleteById(id);
      }
+
+     @Test
+    void deleteMedico_NotFound() {
+         Long id = 1L;
+
+         when(medicoRepository.existsById(id)).thenReturn(false);
+
+         assertThatThrownBy(() -> medicoService.deleteMedico(id))
+                 .isInstanceOf(IllegalArgumentException.class)
+                 .hasMessage("Medico no encontrado");
+     }
+
+     @Test
+    void findMedicoById_Success() {
+         Long id = 1L;
+
+         Medico medico = Medico.builder()
+                 .id(id)
+                 .name("Juan")
+                 .surname("Perez")
+                 .build();
+
+         MedicoResponseDto responseDto = MedicoResponseDto.builder()
+                 .id(id)
+                 .name("Juan")
+                 .surname("Perez")
+                 .especialidades(List.of())
+                 .build();
+
+         when(medicoRepository.findById(id)).thenReturn(java.util.Optional.of(medico));
+         when(medicoMapper.toResponseDto(medico)).thenReturn(responseDto);
+
+         MedicoResponseDto result = medicoService.findbyId(id);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(id);
+        assertThat(result.getName()).isEqualTo(medico.getName());
+        assertThat(result.getSurname()).isEqualTo(medico.getSurname());
+     }
 }
