@@ -99,4 +99,20 @@ public class CitaServiceImplTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("El slot ya está reservado");
     }
+
+    @Test
+    void deleteCita_Success() {
+        Long citaId = 1L;
+
+        Cita cita = Cita.builder()
+                .id(citaId)
+                .estado(EstadoCita.PENDIENTE)
+                .build();
+
+        when(citaRepository.findById(citaId)).thenReturn(Optional.of(cita));
+
+        citaService.deleteCita(citaId);
+
+        verify(citaRepository).deleteById(citaId);
+    }
 }
