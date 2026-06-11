@@ -1,6 +1,7 @@
 package org.gestion.proyecto_sanitario.paciente.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.gestion.proyecto_sanitario.auth.model.Role;
 import org.gestion.proyecto_sanitario.auth.model.User;
 import org.gestion.proyecto_sanitario.auth.repository.UserRepository;
 import org.gestion.proyecto_sanitario.paciente.dto.request.PacienteRequestDto;
@@ -54,7 +55,7 @@ public class PacienteServiceImpl implements PacienteService {
         User user = User.builder()
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(password))
-                .role(org.gestion.proyecto_sanitario.auth.model.Role.PACIENTE)
+                .role(Role.PACIENTE)
                 .activo(true)
                 .build();
         userRepository.save(user);
