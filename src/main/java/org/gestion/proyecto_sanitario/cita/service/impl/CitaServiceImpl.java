@@ -14,6 +14,8 @@ import org.gestion.proyecto_sanitario.paciente.repository.PacienteRepository;
 import org.gestion.proyecto_sanitario.paciente.service.PacienteService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,6 +26,15 @@ public class CitaServiceImpl implements CitaService {
     private final CitaMapper citaMapper;
     private final PacienteRepository pacienteRepository;
     private final SlotRepository slotRepository;
+    private final JavaMailSender mailSender;
+
+    private void enviarEmailNotificacion(String email) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Estado de su cita médica");
+        message.setText("Su cita ha sido actualizada. Por favor, revise su cuenta para más detalles.");
+        mailSender.send(message);
+    }
 
 
     @Override
@@ -66,6 +77,7 @@ public class CitaServiceImpl implements CitaService {
         if (dto.getMotivo() != null) citaExistente.setMotivo(dto.getMotivo());
         if (dto.getNotas() != null) citaExistente.setNotas(dto.getNotas());
         var updated = citaRepository.save(citaExistente);
+        enviarEmailNotificacion(citaExistente.getPaciente().getUser().getEmail());
         return citaMapper.toResponseDto(updated);
     }
 
